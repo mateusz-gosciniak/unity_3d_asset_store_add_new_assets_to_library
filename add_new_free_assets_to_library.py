@@ -1,85 +1,41 @@
 """ File which run automation to grab new free assets from Unity 3D Store. """
 
-import logging
-import subprocess
+# python standard packages
+import logging 
 
-import bs4
-import requests
-from selenium.webdriver import Chrome, ChromeOptions, ChromeService
+# third-party packages
+# import bs4
+# import requests
+# from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# in project packages
+from utilities.chrome_driver import ChromeDriver
 
 
+# logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-class ChromeDriver:
-    def __init__(self, enable_logs=False) -> None:
-        # enable logs 
-        service = ChromeService(service_args=['--log-level=INFO'], 
-                                log_output=subprocess.STDOUT) \
-            if enable_logs else ChromeService()
-        # configure chrome engine
-        options = ChromeDriver.make_options(enable_logs)
-        # make selenium Chrome webbrowser object
-        self.chrome_driver = Chrome(options, service)
-        logging.info("Chrome init complete")
-
-    @staticmethod
-    def make_options(enable_logs=False):
-        options = ChromeOptions()
-        
-        # more options:
-        # https://github.com/GoogleChrome/chrome-launcher/blob/main/docs/chrome-flags-for-tools.md
-        # https://peter.sh/experiments/chromium-command-line-switches/
-        additional_arguments = [
-            "incognito",
-            "start-maximized",
-            "disable-popup-blocking",
-            "disable-default-apps",
-            "disable-extensions",
-            "enable-automation",
-            "no-sandbox",
-            "disable-infobars",
-            "disable-notifications",
-            "disable-save-password-bubble",
-            "disable-translate",
-            "mute-audio",
-            "hide-scrollbars",
-            "no-default-browser-check",
-            "disable-search-engine-choice-screen",
-        ]
-
-        if enable_logs:
-            additional_arguments.append("log-level=0")
-            additional_arguments.append("enable-logging=stdout")
-
-        for arg in additional_arguments:
-            options.add_argument(arg)
-        
-        experimental_options_prefs = {}
-        options.add_experimental_option("prefs", experimental_options_prefs)
-        return options
-
-    def __enter__(self):
-        return self.chrome_driver
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type:
-            logging.error(f"Chrome Driver Exception: {exc_type}, {exc_val}, {exc_tb}")
-        
-        if not self or not self.chrome_driver:
-            logging.warning("Chrome Driver Object not exist")
-        else:
-            self.chrome_driver.quit()
-            logging.info("Chrome closed")
+# project constants
+ELEMENT_TIMEOUT = 2  # [s]
 
 
 def run_automation():
     # STEP 1 - Open Chrome
     with ChromeDriver() as chrome_driver:
+        selenium_waiter = WebDriverWait(chrome_driver, timeout=ELEMENT_TIMEOUT)
+
         # STEP 2 - Open Asset Store Page
         chrome_driver.get("https://assetstore.unity.com/")
         logging.info("Asset Store open")
-
+        accept_all_cookies_btn = chrome_driver.find_element(By.ID, "onetrust-accept-btn-handler")
+        selenium_waiter.until(EC.element_to_be_clickable(accept_all_cookies_btn))
+        accept_all_cookies_btn.click()
+        logging.info("Cookies Accepted")
+        # user_login_button
         # User interaction only in case of debug
         input("press key")
 
