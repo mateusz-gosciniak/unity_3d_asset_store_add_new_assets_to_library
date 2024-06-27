@@ -9,6 +9,10 @@ Libs: Requests, BeautifulSoup4, Selenium
 Automation Goal: Check on demand if new assets appears and add it to your account 
 Optionaly Goal: Make Database with your assets, and provide additional informations there  
 
+Assumptions: Standard User login to Unity without two factor authentication:
+- no SSO support,
+- no two factor authentication
+
 Automation steps:
 - Open Chrome
 - Go to Unity3d Asset Store
