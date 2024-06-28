@@ -1,3 +1,2 @@
-beautifulSoup4
-selenium
-keyring
+selenium==4.22.0
+keyring==25.2.1
