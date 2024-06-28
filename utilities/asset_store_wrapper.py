@@ -21,7 +21,7 @@ class AssetStoreWrongPageError(Exception):
     pass
 
 
-class UnrecognizedAssetStatusError(Exception):
+class AssetStoreAssetButtonError(Exception):
     pass
 
 
@@ -105,13 +105,30 @@ class AssetStoreWrapper(ChromeDriver):
             return
         return assets
     
+    def get_asset_button(self, asset_web_element):
+        buttons = asset_web_element.find_elements(By.XPATH, ".//button[*]")
+        if buttons is None:
+            raise AssetStoreAssetButtonError("Button not found")
+        
+        if len(buttons) != 2:
+            raise AssetStoreAssetButtonError("Button not found")
+            
+        _, asset_btn = buttons  # unpack, and discar add to favorite button
+        return asset_btn  # can be open in unity, add to assets etc.
+
     def get_asset_status(self, asset_web_element):
-        _, asset_btn = asset_web_element.find_elements(By.XPATH, ".//button[*]")
+        asset_btn = self.get_asset_button(asset_web_element)
+        if asset_btn is None:
+            raise AssetStoreAssetButtonError("Button not found")
+
         return asset_btn.text
     
     def add_asset(self, asset_web_element):
-        _, asset_btn = asset_web_element.find_elements(By.XPATH, ".//button[*]")
-        asset_btn.click()
+        add_asset_btn = self.get_asset_button(asset_web_element)  # assumption
+        if add_asset_btn is None:
+            raise AssetStoreAssetButtonError("Button not found")
+
+        add_asset_btn.click()
         logging.info(f"Add asset clicked")
 
         accept_btn_xpath = "//button[@label='Accept']"
